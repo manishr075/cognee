@@ -2,7 +2,11 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from neo4j.exceptions import DatabaseUnavailable, Neo4jError
+
+try:
+    from neo4j.exceptions import DatabaseUnavailable, Neo4jError
+except ModuleNotFoundError:
+    pytest.skip("neo4j dependency is not installed", allow_module_level=True)
 
 from cognee.infrastructure.databases.graph.neo4j_driver.deadlock_retry import deadlock_retry
 

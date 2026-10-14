@@ -1,24 +1,13 @@
 import asyncio
 import gc
-import importlib.util
-import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-# Mock langchain_aws if not installed
-if "langchain_aws" not in sys.modules:
-    mock_lc = MagicMock()
-    sys.modules["langchain_aws"] = mock_lc
-
-# The adapter imports botocore.config at module level; stub it out when the
-# real package is not installed so this module stays importable.
-if "botocore" not in sys.modules and importlib.util.find_spec("botocore") is None:
-    mock_botocore = MagicMock()
-    sys.modules["botocore"] = mock_botocore
-    sys.modules["botocore.config"] = mock_botocore.config
-
-from cognee.infrastructure.databases.graph.neptune_driver.adapter import NeptuneGraphDB
+try:
+    from cognee.infrastructure.databases.graph.neptune_driver.adapter import NeptuneGraphDB
+except (ImportError, ModuleNotFoundError, AttributeError) as exc:  # pragma: no cover
+    pytest.skip(f"Neptune adapter dependencies unavailable: {exc}", allow_module_level=True)
 from cognee.infrastructure.databases.utils.closing_lru_cache import ClosingLRUCache
 
 

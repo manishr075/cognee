@@ -2,15 +2,30 @@ import html
 import json
 from collections import defaultdict
 
-import plotly.graph_objects as go
+try:
+    import plotly.graph_objects as go
+except ModuleNotFoundError:  # pragma: no cover - exercised by tests via monkeypatch
+    go = None
+
+
+def _require_plotly():
+    if go is None:
+        raise ModuleNotFoundError(
+            "plotly is required to generate evaluation dashboard plots. "
+            "Install it with `pip install plotly`."
+        )
+    return go
 
 
 def create_distribution_plots(metrics_data: dict[str, list[float]]) -> list[str]:
     """Create distribution histogram plots for each metric."""
+    plotly_go = _require_plotly()
     figures = []
     for metric, scores in metrics_data.items():
-        fig = go.Figure()
-        fig.add_trace(go.Histogram(x=scores, name=metric, nbinsx=10, marker_color="#1f77b4"))
+        fig = plotly_go.Figure()
+        fig.add_trace(
+            plotly_go.Histogram(x=scores, name=metric, nbinsx=10, marker_color="#1f77b4")
+        )
 
         fig.update_layout(
             title=f"{metric} Score Distribution",
@@ -25,10 +40,11 @@ def create_distribution_plots(metrics_data: dict[str, list[float]]) -> list[str]
 
 def create_ci_plot(ci_results: dict[str, tuple[float, float, float]]) -> str:
     """Create confidence interval bar plot."""
-    fig = go.Figure()
+    plotly_go = _require_plotly()
+    fig = plotly_go.Figure()
     for metric, (mean_score, lower, upper) in ci_results.items():
         fig.add_trace(
-            go.Bar(
+            plotly_go.Bar(
                 x=[metric],
                 y=[mean_score],
                 error_y={

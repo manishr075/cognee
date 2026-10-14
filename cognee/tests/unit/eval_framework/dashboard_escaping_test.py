@@ -9,6 +9,7 @@ twin (``analysis.dashboard_generator``) must escape these values.
 """
 
 import unittest
+from unittest.mock import patch
 
 from cognee.eval_framework import metrics_dashboard
 from cognee.eval_framework.analysis import dashboard_generator
@@ -51,6 +52,14 @@ class TestDashboardEscaping(unittest.TestCase):
             )
             self.assertNotIn("<b>bench</b>", rendered)
             self.assertIn("&lt;b&gt;bench&lt;/b&gt;", rendered)
+
+    def test_plot_functions_raise_helpful_error_without_plotly(self):
+        for module in (metrics_dashboard, dashboard_generator):
+            with (
+                patch.object(module, "go", None),
+                self.assertRaisesRegex(ModuleNotFoundError, "pip install plotly"),
+            ):
+                module.create_distribution_plots({"accuracy": [1.0]})
 
 
 if __name__ == "__main__":

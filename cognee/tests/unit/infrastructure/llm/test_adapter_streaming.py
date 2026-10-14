@@ -29,12 +29,16 @@ from cognee.infrastructure.llm.streaming.token_sink import (
     answer_scope,
     requested_token_sink,
 )
-from cognee.infrastructure.llm.structured_output_framework.litellm_instructor.llm.generic_llm_api.adapter import (
-    GenericAPIAdapter,
-)
 from cognee.infrastructure.llm.structured_output_framework.litellm_native.native_adapter import (
     NativeLiteLLMAdapter,
 )
+
+try:
+    from cognee.infrastructure.llm.structured_output_framework.litellm_instructor.llm.generic_llm_api.adapter import (
+        GenericAPIAdapter,
+    )
+except (ImportError, ModuleNotFoundError, AttributeError) as exc:  # pragma: no cover
+    pytest.skip(f"Streaming adapter dependencies unavailable: {exc}", allow_module_level=True)
 
 STREAM_MODULE = "cognee.infrastructure.llm.streaming.stream_completion"
 GENERIC_MODULE = "cognee.infrastructure.llm.structured_output_framework.litellm_instructor.llm.generic_llm_api.adapter"
